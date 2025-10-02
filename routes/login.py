@@ -16,26 +16,25 @@ async def login(data: dict = fastapi.Body(...)):
     if not email or not password:
         raise fastapi.HTTPException(status_code=400)
 
-    async with db.pool.connection() as aconn:
-        async with aconn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-            await cur.execute("SELECT * FROM users WHERE email = %s", (email,))
-            row = await cur.fetchone()
+    async with db.getDictCursor() as cur:
+        await cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        row = await cur.fetchone()
 
-            if row:
-                hash = row["password_hash"]
-                user_id = row["id"]
-                username = row["username"]
+        if row:
+            hash = row["password_hash"]
+            user_id = row["id"]
+            username = row["username"]
 
-                if bcrypt.checkpw(password.encode(), hash.encode()):
-                    expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-                    token = jwt.encode(
-                        {"sub": user_id, "username": username, "exp": expire},
-                        JWTSECRETKEY,
-                        algorithm=JWTALGO
-                    )
-                    return fastapi.responses.JSONResponse(
-                        content={"token": token},
-                        status_code=200
-                    )
+            if bcrypt.checkpw(password.encode(), hash.encode()):
+                expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+                token = jwt.encode(
+                    {"sub": str(user_id), "username": username, "exp": expire},
+                    JWTSECRETKEY,
+                    algorithm=JWTALGO
+                )
+                return fastapi.responses.JSONResponse(
+                    content={"token": token},
+                    status_code=200
+                )
 
     raise fastapi.HTTPException(status_code=401, detail="Invalid credentials")
