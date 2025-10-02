@@ -2,7 +2,7 @@ import fastapi
 import jwt
 
 # local
-import server
+from config import JWTSECRETKEY, JWTALGO
 
 security = fastapi.security.HTTPBearer()
 

@@ -1,7 +1,6 @@
 import fastapi
 import asyncio
 import os
-import dotenv
 import uvicorn
 import datetime
 
@@ -10,11 +9,6 @@ import db
 import routes.login as login
 import routes.user as user
 import routes.admin as admin
-
-dotenv.load_dotenv()
-
-JWTALGO = os.getenv("JWTALGO")
-JWTSECRETKEY = os.getenv("JWTSECRETKEY")
 
 app = fastapi.FastAPI()
 
@@ -26,7 +20,7 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    await db.pool.close()
+    await db.close_db()
 
 
 

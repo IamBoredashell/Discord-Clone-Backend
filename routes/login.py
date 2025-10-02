@@ -5,7 +5,7 @@ import datetime
 
 #local
 import db
-import server
+from config import JWTALGO, JWTSECRETKEY
 router = fastapi.APIRouter()
 
 @router.post("/login")
@@ -30,8 +30,8 @@ async def login(data: dict = fastapi.Body(...)):
                     expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
                     token = jwt.encode(
                         {"sub": user_id, "username": username, "exp": expire},
-                        server.JWTSECRETKEY,
-                        algorithm=server.JWTALGO
+                        JWTSECRETKEY,
+                        algorithm=JWTALGO
                     )
                     return fastapi.responses.JSONResponse(
                         content={"token": token},

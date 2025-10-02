@@ -1,14 +1,15 @@
-import psycopg
-import psycopg_pool
 import asyncio
 import os
-import dotenv
+import psycopg_pool
 
-dotenv.load_dotenv()
+#Local import
+from config import DATABASE_URL
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 pool = None
 
 async def init_db():
     global pool
     pool = psycopg_pool.AsyncConnectionPool(DATABASE_URL, min_size=1, max_size=16)
+
+async def close_db():
+    await pool.close()
