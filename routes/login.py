@@ -2,7 +2,7 @@ import fastapi
 import bcrypt
 import jwt
 import datetime
-
+import psycopg
 #local
 import db
 from config import JWTALGO, JWTSECRETKEY
@@ -17,7 +17,7 @@ async def login(data: dict = fastapi.Body(...)):
         raise fastapi.HTTPException(status_code=400)
 
     async with db.pool.connection() as aconn:
-        async with aconn.cursor() as cur:
+        async with aconn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             await cur.execute("SELECT * FROM users WHERE email = %s", (email,))
             row = await cur.fetchone()
 
