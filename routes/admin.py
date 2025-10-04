@@ -22,6 +22,24 @@ async def add_user(
 
     if not email or not username or not password:
         raise fastapi.HTTPException(status_code=400)
+    
+    async with db.getDictCursor() as cur:
+        await cur.execute("SELECT id FROM users WHERE email = %s", (email,))
+        row = await cur.fetchone()
+        if row:
+            return fastapi.responses.JSONResponse(
+                content={"msg": "User already exists"},
+                status_code=403
+            )
+
+    async with db.getDictCursor() as cur:
+        await cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+        row = await cur.fetchone()
+        if row:
+            return fastapi.responses.JSONResponse(
+                content={"msg": "User already exists"},
+                status_code=403
+            )
 
     hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 

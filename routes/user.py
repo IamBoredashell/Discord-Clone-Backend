@@ -1,16 +1,14 @@
-
 import fastapi
-import bcrypt
+import psycopg
 #local
 import db
-import auth
+import auth 
 
 router = fastapi.APIRouter()
 
-@router.get("/user/get_info")
-async def get_info(
-        data: dict = fastapi.Body(...),
+@router.get("/user")
+async def hello(
         payload: dict = fastapi.Depends(auth.verify_token)
 ):
-    pass 
-
+    print("User Connected successfully")
+    return {"msg": f"Hello {payload.get('username', 'user')}!"}
