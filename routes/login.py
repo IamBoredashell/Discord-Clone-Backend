@@ -21,11 +21,11 @@ async def login(data: LoginRequest):
             hash = row["password_hash"]
             user_id = row["id"]
             username = row["username"]
-
+            user_role = row["role"]
             if bcrypt.checkpw(data.password.encode(), hash.encode()):
                 expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
                 token = jwt.encode(
-                    {"sub": str(user_id), "username": username, "exp": expire},
+                    {"sub": str(user_id), "username": username,"role":user_role, "exp": expire},
                     JWTSECRETKEY,
                     algorithm=JWTALGO
                 )
