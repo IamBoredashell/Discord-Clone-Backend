@@ -23,3 +23,16 @@ async def verify_token(credentials: fastapi.Depends = fastapi.Depends(security))
     except jwt.InvalidTokenError as e:
         print("Jwt Error:",e)
         raise fastapi.HTTPException(status_code=401, detail="Invalid token")
+
+
+def verify_token_websocket(token:str):
+    try:
+        payload=jwt.decode(token,JWTSECRETKEY,algorithms=[JWTALGO])
+        return payload
+    except jwt.ExpiredSignatureError as e:
+        print("Jwt Error:",e)
+        raise fastapi.HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError as e:
+        print("Jwt Error:",e)
+        raise fastapi.HTTPException(status_code=401, detail="Invalid token")
+

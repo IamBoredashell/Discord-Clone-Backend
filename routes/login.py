@@ -14,10 +14,10 @@ async def login(data: LoginRequest):
     print("Begining Login")
 
     async with db.getDictCursor() as cur:
-        await cur.execute("SELECT * FROM users WHERE email = %s", (data.email,))
+        await cur.execute("SELECT * FROM users_account WHERE email = %s", (data.email,))
         row = await cur.fetchone()
 
-        if row:
+        if row and row["status"]=="active":
             hash = row["password_hash"]
             user_id = row["id"]
             username = row["username"]

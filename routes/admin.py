@@ -18,7 +18,7 @@ async def add_user(
         raise fastapi.HTTPException(status_code=401)
     
     async with db.getDictCursor() as cur:
-        await cur.execute("SELECT id FROM users WHERE email = %s or username = %s", (user.email, user.username))
+        await cur.execute("SELECT id FROM user_account WHERE email = %s or username = %s", (user.email, user.username))
         row = await cur.fetchone()
         if row:
             raise fastapi.HTTPException(status_code=403, detail="Email or username already exists")
@@ -26,14 +26,23 @@ async def add_user(
 
     hashed = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt()).decode()
 
+
     async with db.getDictCursor() as cur:
         try:
             await cur.execute(
-                "INSERT INTO users (email, username, password_hash, role) VALUES (%s, %s, %s, %s)",
-                (user.email, user.username, user.hashed, user.role)
+                "INSERT INTO user_account (email, username, hash, user_role, status) VALUES (%s, %s, %s, %s, %s)",
+                (user.email, user.username, hashed, user.role, user.status)
+            )
+            await cur.execute(
+
+                "INSERT INTO user_info (first_name,last_name) VALUES (%s %s)",
+                (user.first_name,user.last_name)
             )
         except Exception as e:
-            raise fastapi.HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+            return fastapi.responses.JSONResponse(
+                content={"msg": f"DB error: {str(e)}"},
+                status_code=500
+            )
 
     return fastapi.responses.JSONResponse(
         content={"msg": f"user {user.username} created successfully"},
@@ -48,6 +57,9 @@ async def init_admin():
     username = "admin"
     password = "admin@1234"
     user_role = "sys_admin"
+    status="active"
+    first_name="System"
+    last_name="Admin"
     
     async with db.getDictCursor() as cur:
         # check if admin already exists
@@ -65,8 +77,13 @@ async def init_admin():
 
         try:
             await cur.execute(
-                "INSERT INTO users (email, username, password_hash, user_role) VALUES (%s, %s, %s %s)",
-                (email, username, hashed)
+                "INSERT INTO user_account (email, username, hash, user_role, status) VALUES (%s, %s, %s, %s, %s)",
+                (email, username, hashed, user_role, status)
+            )
+            await cur.execute(
+
+                "INSERT INTO user_info (first_name,last_name) VALUES (%s %s)",
+                (first_name,last_name)
             )
         except Exception as e:
             return fastapi.responses.JSONResponse(
